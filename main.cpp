@@ -150,10 +150,15 @@ bool TreeParser::isOperator(char c){
     }
 }
 
+//public processExpression
 void TreeParser::processExpression(string &expression){
+    //check if empty
     if (expression != "") {
+        //store expression in data member
         this->expression = expression;
+        //reset position
         position = 0;
+        //new node, root pointer, call private processExpression
         root = make_shared<Node>();
         root->data = expression;
         processExpression(root);
@@ -161,23 +166,31 @@ void TreeParser::processExpression(string &expression){
     return;
 }
 
+//private processExpression
 void TreeParser::processExpression(shared_ptr<Node> ptr) {
+    //loop as long as postion is less then expression size
     while (position < expression.length()) {
+        //if ( do this
         if (expression[position] == '(') {
             shared_ptr<Node> newNode = make_shared<Node>();
+            newNode->lchild = nullptr;
+            newNode->rchild = nullptr;
             ptr->lchild = newNode;
             position++; //must be post
             processExpression(ptr->lchild);
         }
+        //if digit
         else if (isDigit(expression[position])) {
             string holder = "";
             while (isDigit(expression[position])) {
+                //concatenate digit
                 holder += expression[position];
                 ++position; //must be pre
             }
             ptr->data = holder;
             return;
         }
+        //if operator
         else if (isOperator(expression[position])) {
             ptr->data = expression[position];
             shared_ptr<Node> newNode = make_shared<Node>();
@@ -185,22 +198,24 @@ void TreeParser::processExpression(shared_ptr<Node> ptr) {
             ++position; //must be pre
             processExpression(ptr->rchild);
         }
+        //if )
         else if (expression[position] == ')') {
             ++position; //must be pre
             return;
         }
+        //if space
         else if (expression[position] == ' ') {
             ++position; //must be pre
         }
     }
 }
+//public computeAnswer
 string TreeParser::computeAnswer(){
     computeAnswer(root);
-    string finalNum = mathStack.top();
-    mathStack.pop();
-    return finalNum;
+    return mathStack.top();
 }
 
+//private computeAnswer
 void TreeParser::computeAnswer(shared_ptr<Node> ptr){
     if (ptr) {
         computeAnswer(ptr->lchild);
@@ -210,32 +225,37 @@ void TreeParser::computeAnswer(shared_ptr<Node> ptr){
             return;
         }
         else if (isOperator(ptr->data[0])) {
-            double a = castStrToDouble(mathStack.top());
+            double A = castStrToDouble(mathStack.top());
             mathStack.pop();
-            double b = castStrToDouble(mathStack.top());
+            double B = castStrToDouble(mathStack.top());
             mathStack.pop();
+            // addition
             if (ptr->data[0] == '+') {
-                string answer = castDoubleToStr(b + a);
+                string answer = castDoubleToStr(B + A);
                 mathStack.push(answer);
                 return;
             }
+            // subtraction
             else if (ptr->data[0] == '-') {
-                string answer = castDoubleToStr(b - a);
+                string answer = castDoubleToStr(B - A);
                 mathStack.push(answer);
                 return;
             }
+            // multiply
             else if (ptr->data[0] == '*') {
-                string answer = castDoubleToStr(b * a);
+                string answer = castDoubleToStr(B * A);
                 mathStack.push(answer);
                 return;
             }
+            // divide
             else if (ptr->data[0] == '/') {
-                string answer = castDoubleToStr(b / a);
+                string answer = castDoubleToStr(B / A);
                 mathStack.push(answer);
                 return;
             }
+            // power
             else if (ptr->data[0] == '^') {
-                string answer = castDoubleToStr(pow(b, a));
+                string answer = castDoubleToStr(pow(B, A));
                 mathStack.push(answer);
                 return;
             }
